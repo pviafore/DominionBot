@@ -1,0 +1,6 @@
+[package]
+name = "DominionBot"
+version = "0.1.0"
+authors = ["Pat Viafore <patviafore@gmail.com>"]
+
+[dependencies]
