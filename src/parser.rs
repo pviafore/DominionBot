@@ -8,3 +8,14 @@ pub fn parse_message(input : String) -> String {
       Err(_) => String::from("")
    }
 }
+
+
+#[cfg(test)]
+mod tests {
+   use super::parse_message;
+
+   #[test]
+   fn invalid_json_returns_empty_string() {
+        assert_eq!(parse_message(String::from("{")), String::from(""))
+   }
+}
