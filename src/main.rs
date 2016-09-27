@@ -10,11 +10,10 @@ fn run_game_loop() {
     loop {
         let input = get_input();
         let output = parser::parse_message(input);
-        if !output.is_empty(){
-            println!("{}", output);
-        }
-        else {
-            break;
+        match output {
+            parser::Message::ValidMessage =>  println!("Valid Message"),
+            parser::Message::InvalidMessage => break,
+            _ => break
         }
     } 
 }
