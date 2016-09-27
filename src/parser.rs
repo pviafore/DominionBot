@@ -42,10 +42,12 @@ fn create_player_name_message(data : &Object) -> Result<Message, ()> {
 #[cfg(test)]
 mod tests {
    use super::parse_message;
-
+   fn assert_invalid_message(s: &str) {
+        assert_eq!(parse_message(String::from(s)), super::Message::InvalidMessage) 
+   }
    #[test]
-   fn invalid_json_returns_empty_string() {
-        assert_eq!(parse_message(String::from("{")), super::Message::InvalidMessage) 
+   fn invalid_json_returns_Invalid_Message() {
+        assert_invalid_message("{"); 
    }
 
    #[test]
@@ -53,4 +55,6 @@ mod tests {
         let json = String::from("{\"type\": \"player-name-request\", \"player_number\": \"player2\", \"version\": 1}");
         assert_eq!(parse_message(json), super::Message::PlayerNameRequest{ player_number: String::from("player2"), version: 1}); 
    }
+
+
 }
