@@ -101,6 +101,8 @@ mod tests {
         assert_invalid_message("{\"type\": \"play-turn\", \"actions\": 1, \"buys\": 1, \"extra_money\": 1, \"cards_played\": [], \"cards_gained\": []}");
         assert_invalid_message("{\"type\": \"play-turn\", \"actions\": 1, \"buys\": 1, \"extra_money\": 1, \"hand\": [], \"cards_gained\": []}");
         assert_invalid_message("{\"type\": \"play-turn\", \"actions\": 1, \"buys\": 1, \"extra_money\": 1, \"hand\": [], \"cards_played\": []}");
+        assert_invalid_message("{\"type\": \"attack-request\", \"discard\": 2}"); 
+        assert_invalid_message("{\"type\": \"attack-request\",  \"options\": []}");
 
    }
 
