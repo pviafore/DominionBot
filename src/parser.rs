@@ -19,12 +19,25 @@ fn parse_json(json: Json) -> Result<Message, ()> {
    let message_type = try!(get_string(json_obj, "type"));
    match message_type.as_str() {
       "player-name-request" => create_player_name_message(json_obj),
+      "play-turn" => create_play_turn_message(json_obj),
       _ => Err(())
    }
 } 
 
 fn get_string(json_obj : &Object, key: &str) -> Result<String, ()> {
   json_obj.get(key).and_then(|s: &Json| s.as_string().map(|s| String::from(s))).ok_or(())
+}
+
+fn get_string_list(json_obj : &Object, key: &str) -> Result<Vec<String>, ()> {
+  let array = json_obj.get(key).and_then(|s: &Json| s.as_array().cloned());
+  match array { 
+     Some(arr) => convert_array_to_string(arr),
+     None => Err(()) 
+  }
+}
+
+fn convert_array_to_string(array: Vec<Json>) -> Result<Vec<String>, ()> {
+   array.iter().map(|s| s.as_string().map(|s| String::from(s)).ok_or(())).collect()
 }
 
 
@@ -37,6 +50,15 @@ fn create_player_name_message(data : &Object) -> Result<Message, ()> {
    Ok(Message::PlayerNameRequest { player_number: player_number, version: version})
 }
 
+fn create_play_turn_message(data: &Object) -> Result<Message, ()> {
+   let actions = try!(get_num(data, "actions"));
+   let buys = try!(get_num(data, "buys"));
+   let extra_money = try!(get_num(data, "extra_money"));
+   let hand = try!(get_string_list(data, "hand"));
+   let cards_played = try!(get_string_list(data, "cards_played"));
+   let cards_gained = try!(get_string_list(data, "cards_gained"));
+   Ok(Message::PlayTurnRequest { actions: actions, buys: buys, extra_money: extra_money, hand: hand, cards_played: cards_played, cards_gained: cards_gained})
+}
 
 #[cfg(test)]
 mod tests {
