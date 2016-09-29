@@ -6,9 +6,18 @@ use self::rustc_serialize::json::{Json, Object};
 pub enum Message {
     PlayerNameRequest { player_number: String, version: u64},
     PlayTurnRequest { actions: u64, buys: u64, extra_money: u64, hand: Vec<String>, cards_played: Vec<String>, cards_gained: Vec<String> },
+    GameInfoMessage,
+    SupplyInfoMessage,
+    PlayerGainedMessage,
+    PlayerPlayedMessage,
+    PlayerTrashedMessage,
+    PlayerTopDiscardMessage,
+    PlayerRevealedMessage,
+    PlayerShuffledMessage,
+    AttackRequestMessage,
+    GameEndMessage,
     InvalidMessage
 }
-
 
 pub fn parse_message(input : String) -> Message{
     Json::from_str(&input).map_err(|_| ()).and_then(parse_json).unwrap_or(Message::InvalidMessage) 
@@ -20,6 +29,16 @@ fn parse_json(json: Json) -> Result<Message, ()> {
    match message_type.as_str() {
       "player-name-request" => create_player_name_message(json_obj),
       "play-turn" => create_play_turn_message(json_obj),
+      "attack-request" => Ok(Message::AttackRequestMessage),
+      "game-info" => Ok(Message::GameInfoMessage),
+      "supply-info" => Ok(Message::SupplyInfoMessage),
+      "player-gained" => Ok(Message::PlayerGainedMessage),
+      "player-played" => Ok(Message::PlayerPlayedMessage),
+      "player-trashed" => Ok(Message::PlayerTrashedMessage),
+      "player-top-discard" => Ok(Message::PlayerTopDiscardMessage),
+      "player-reveal" => Ok(Message::PlayerRevealedMessage),
+      "player-shuffled" => Ok(Message::PlayerShuffledMessage),
+      "game-end" => Ok(Message::GameEndMessage),
       _ => Err(())
    }
 } 
@@ -83,6 +102,22 @@ mod tests {
         assert_invalid_message("{\"type\": \"play-turn\", \"actions\": 1, \"buys\": 1, \"extra_money\": 1, \"hand\": [], \"cards_gained\": []}");
         assert_invalid_message("{\"type\": \"play-turn\", \"actions\": 1, \"buys\": 1, \"extra_money\": 1, \"hand\": [], \"cards_played\": []}");
 
+   }
+
+   #[test]
+   fn catchall_test_for_unsupported_types() {
+      assert_eq!(parse_message("{\"type\": \"game-info\"}".to_string()), super::Message::GameInfoMessage);
+      assert_eq!(parse_message("{\"type\": \"supply-info\"}".to_string()), super::Message::SupplyInfoMessage);
+      assert_eq!(parse_message("{\"type\": \"player-gained\"}".to_string()), super::Message::PlayerGainedMessage);
+      assert_eq!(parse_message("{\"type\": \"player-played\"}".to_string()), super::Message::PlayerPlayedMessage);
+      assert_eq!(parse_message("{\"type\": \"player-trashed\"}".to_string()), super::Message::PlayerTrashedMessage);
+      assert_eq!(parse_message("{\"type\": \"player-top-discard\"}".to_string()), super::Message::PlayerTopDiscardMessage);
+      assert_eq!(parse_message("{\"type\": \"player-reveal\"}".to_string()), super::Message::PlayerRevealedMessage);
+      assert_eq!(parse_message("{\"type\": \"player-shuffled\"}".to_string()), super::Message::PlayerShuffledMessage);
+      assert_eq!(parse_message("{\"type\": \"attack-request\"}".to_string()), super::Message::AttackRequestMessage);
+      assert_eq!(parse_message("{\"type\": \"game-end\"}".to_string()), super::Message::GameEndMessage);
+ 
+ 
    }
 
    #[test]
