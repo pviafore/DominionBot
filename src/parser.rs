@@ -11,7 +11,7 @@ pub enum Message {
 
 
 pub fn parse_message(input : String) -> Message{
-    Json::from_str(&input).map_err(|_| ()).and_then(|j| parse_json(j)).unwrap_or(Message::InvalidMessage) 
+    Json::from_str(&input).map_err(|_| ()).and_then(parse_json).unwrap_or(Message::InvalidMessage) 
 }
 
 fn parse_json(json: Json) -> Result<Message, ()> {
@@ -40,10 +40,10 @@ fn convert_array_to_string(array: Vec<Json>) -> Result<Vec<String>, ()> {
    array.iter().map(|s| s.as_string().map(|s| String::from(s)).ok_or(())).collect()
 }
 
-
 fn get_num(json_obj : &Object, key: &str) -> Result<u64, ()> {
   json_obj.get(key).and_then(|i: &Json| i.as_u64()).ok_or(())
 }
+
 fn create_player_name_message(data : &Object) -> Result<Message, ()> {
    let player_number = try!(get_string(data, "player_number"));
    let version = try!(get_num(data, "version"));
