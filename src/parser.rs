@@ -25,7 +25,7 @@ fn parse_json(json: Json) -> Result<Message, ()> {
 } 
 
 fn get_string(json_obj : &Object, key: &str) -> Result<String, ()> {
-  json_obj.get(key).and_then(|s: &Json| s.as_string().map(|s| String::from(s))).ok_or(())
+  json_obj.get(key).and_then(|s: &Json| s.as_string().map(String::from)).ok_or(())
 }
 
 fn get_string_list(json_obj : &Object, key: &str) -> Result<Vec<String>, ()> {
@@ -37,7 +37,7 @@ fn get_string_list(json_obj : &Object, key: &str) -> Result<Vec<String>, ()> {
 }
 
 fn convert_array_to_string(array: Vec<Json>) -> Result<Vec<String>, ()> {
-   array.iter().map(|s| s.as_string().map(|s| String::from(s)).ok_or(())).collect()
+   array.iter().map(|s| s.as_string().map(String::from).ok_or(())).collect()
 }
 
 fn get_num(json_obj : &Object, key: &str) -> Result<u64, ()> {
@@ -64,7 +64,7 @@ fn create_play_turn_message(data: &Object) -> Result<Message, ()> {
 mod tests {
    use super::parse_message;
    fn assert_invalid_message(s: &str) {
-        assert_eq!(parse_message(String::from(s)), super::Message::InvalidMessage) 
+        assert_eq!(parse_message(s.to_string()), super::Message::InvalidMessage) 
    }
    #[test]
    fn invalid_json_returns_invalid_message() {
