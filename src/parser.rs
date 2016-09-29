@@ -14,7 +14,7 @@ pub enum Message {
     PlayerTopDiscardMessage,
     PlayerRevealedMessage,
     PlayerShuffledMessage,
-    AttackRequestMessage,
+    AttackRequest { discard: u64, options: Vec<String> },
     GameEndMessage,
     InvalidMessage
 }
@@ -29,7 +29,7 @@ fn parse_json(json: Json) -> Result<Message, ()> {
    match message_type.as_str() {
       "player-name-request" => create_player_name_message(json_obj),
       "play-turn" => create_play_turn_message(json_obj),
-      "attack-request" => Ok(Message::AttackRequestMessage),
+      "attack-request" => create_attack_request_message(json_obj),
       "game-info" => Ok(Message::GameInfoMessage),
       "supply-info" => Ok(Message::SupplyInfoMessage),
       "player-gained" => Ok(Message::PlayerGainedMessage),
@@ -79,6 +79,12 @@ fn create_play_turn_message(data: &Object) -> Result<Message, ()> {
    Ok(Message::PlayTurnRequest { actions: actions, buys: buys, extra_money: extra_money, hand: hand, cards_played: cards_played, cards_gained: cards_gained})
 }
 
+fn create_attack_request_message(data: &Object) -> Result<Message, ()> {
+   let discard = try!(get_num(data, "discard"));
+   let options = try!(get_string_list(data, "options"));
+   Ok(Message::AttackRequest { discard: discard, options: options})
+}
+
 #[cfg(test)]
 mod tests {
    use super::parse_message;
@@ -116,10 +122,7 @@ mod tests {
       assert_eq!(parse_message("{\"type\": \"player-top-discard\"}".to_string()), super::Message::PlayerTopDiscardMessage);
       assert_eq!(parse_message("{\"type\": \"player-reveal\"}".to_string()), super::Message::PlayerRevealedMessage);
       assert_eq!(parse_message("{\"type\": \"player-shuffled\"}".to_string()), super::Message::PlayerShuffledMessage);
-      assert_eq!(parse_message("{\"type\": \"attack-request\"}".to_string()), super::Message::AttackRequestMessage);
       assert_eq!(parse_message("{\"type\": \"game-end\"}".to_string()), super::Message::GameEndMessage);
- 
- 
    }
 
    #[test]
@@ -133,4 +136,10 @@ mod tests {
        let json = String::from("{\"type\": \"play-turn\", \"actions\": 1, \"buys\": 1, \"extra_money\": 1, \"hand\": [\"copper\"], \"cards_played\": [\"silver\"], \"cards_gained\": [\"gold\"]}");
        assert_eq!(parse_message(json), super::Message::PlayTurnRequest { actions: 1, buys: 1, extra_money: 1, hand: vec![String::from("copper")], cards_played: vec![String::from("silver")], cards_gained: vec![String::from("gold")]});
    }
+
+  #[test]
+  fn attack_request_is_handled() { 
+      let json = "{\"type\": \"attack-request\", \"discard\": 2, \"options\": [\"copper\"]}".to_string();
+      assert_eq!(parse_message(json), super::Message::AttackRequest{ discard: 2, options: vec!["copper".to_string()] });
+  }
 }
