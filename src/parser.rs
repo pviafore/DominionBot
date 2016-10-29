@@ -1,3 +1,5 @@
+use cards;
+
 extern crate rustc_serialize;
 use self::rustc_serialize::json::{Json, Object};
 
@@ -5,7 +7,7 @@ use self::rustc_serialize::json::{Json, Object};
 #[derive(Debug)]
 pub enum Message {
     PlayerNameRequest { player_number: String, version: u64},
-    PlayTurnRequest { actions: u64, buys: u64, extra_money: u64, hand: Vec<String>, cards_played: Vec<String>, cards_gained: Vec<String> },
+    PlayTurnRequest { actions: u64, buys: u64, extra_money: u64, hand: Vec<Card>, cards_played: Vec<Card>, cards_gained: Vec<Card> },
     GameInfoMessage,
     SupplyInfoMessage,
     PlayerGainedMessage,
@@ -14,7 +16,7 @@ pub enum Message {
     PlayerTopDiscardMessage,
     PlayerRevealedMessage,
     PlayerShuffledMessage,
-    AttackRequest { discard: u64, options: Vec<String> },
+    AttackRequest { discard: u64, options: Vec<Card> },
     GameEndMessage,
     InvalidMessage
 }
@@ -47,16 +49,16 @@ fn get_string(json_obj : &Object, key: &str) -> Result<String, ()> {
   json_obj.get(key).and_then(|s: &Json| s.as_string().map(String::from)).ok_or(())
 }
 
-fn get_string_list(json_obj : &Object, key: &str) -> Result<Vec<String>, ()> {
+fn get_card_list(json_obj : &Object, key: &str) -> Result<Vec<Card>, ()> {
   let array = json_obj.get(key).and_then(|s: &Json| s.as_array().cloned());
   match array { 
-     Some(arr) => convert_array_to_string(arr),
+     Some(arr) => convert_array_to_cards(arr),
      None => Err(()) 
   }
 }
 
-fn convert_array_to_string(array: Vec<Json>) -> Result<Vec<String>, ()> {
-   array.iter().map(|s| s.as_string().map(String::from).ok_or(())).collect()
+fn convert_array_to_cards(array: Vec<Json>) -> Result<Vec<Card>, ()> {
+   array.iter().map(|s| s.as_string().map(String::from).map(Card::to_card).ok_or(())).collect()
 }
 
 fn get_num(json_obj : &Object, key: &str) -> Result<u64, ()> {
@@ -73,15 +75,15 @@ fn create_play_turn_message(data: &Object) -> Result<Message, ()> {
    let actions = try!(get_num(data, "actions"));
    let buys = try!(get_num(data, "buys"));
    let extra_money = try!(get_num(data, "extra_money"));
-   let hand = try!(get_string_list(data, "hand"));
-   let cards_played = try!(get_string_list(data, "cards_played"));
-   let cards_gained = try!(get_string_list(data, "cards_gained"));
+   let hand = try!(get_card_list(data, "hand"));
+   let cards_played = try!(get_card_list(data, "cards_played"));
+   let cards_gained = try!(get_card_list(data, "cards_gained"));
    Ok(Message::PlayTurnRequest { actions: actions, buys: buys, extra_money: extra_money, hand: hand, cards_played: cards_played, cards_gained: cards_gained})
 }
 
 fn create_attack_request_message(data: &Object) -> Result<Message, ()> {
    let discard = try!(get_num(data, "discard"));
-   let options = try!(get_string_list(data, "options"));
+   let options = try!(get_card_list(data, "options"));
    Ok(Message::AttackRequest { discard: discard, options: options})
 }
 

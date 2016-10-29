@@ -1,5 +1,7 @@
 use std::io;
 mod parser;
+mod cards;
+
 
 fn main() {
     run_game_loop();
